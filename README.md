@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 # 🖋️ PadSync
 
 **PadSync** is a lightweight, real-time tool that turns your smartphone into a wireless writing pad for your Windows PC. No expensive hardware, no dedicated stylus required—just your phone and a WiFi connection.
@@ -95,3 +96,7 @@ MIT © PadSync
 
 ---
 *Built for speed, built for flow.*
+=======
+# padsync
+PadSync — Turn your phone into a wireless writing pad for your laptop. Draw, doodle, and take notes on your phone screen and see it live on your Windows desktop. No hardware needed.
+>>>>>>> cf19d3f1f8017e28af1e06cc0e180cee9a4a6ce7
