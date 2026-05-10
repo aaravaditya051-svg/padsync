@@ -1,0 +1,51 @@
+---
+import '../styles/global.css';
+
+interface Props {
+	title: string;
+}
+
+const { title } = Astro.props;
+---
+
+<!doctype html>
+<html lang="en" class="scroll-smooth">
+	<head>
+		<meta charset="UTF-8" />
+		<meta name="description" content="PadSync - Turn your phone into a live writing pad for your PC." />
+		<meta name="viewport" content="width=device-width" />
+		<link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+		<meta name="generator" content={Astro.generator} />
+		<title>{title} | PadSync</title>
+		<link rel="preconnect" href="https://fonts.googleapis.com">
+		<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+		<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Outfit:wght@600;700&display=swap" rel="stylesheet">
+	</head>
+	<body class="bg-[#0A0B14] text-white font-['Inter',sans-serif] selection:bg-[#863BFF]/30">
+		<slot />
+	</body>
+</html>
+
+<style is:global>
+	:root {
+		--accent: #863BFF;
+		--accent-light: #B48CFF;
+		--accent-dark: #6226CC;
+	}
+	
+	h1, h2, h3, h4 {
+		font-family: 'Outfit', sans-serif;
+	}
+
+	.glass-card {
+		background: rgba(255, 255, 255, 0.03);
+		backdrop-filter: blur(12px);
+		border: 1px solid rgba(255, 255, 255, 0.08);
+	}
+
+	.text-gradient {
+		background: linear-gradient(135deg, #FFF 0%, #863BFF 100%);
+		-webkit-background-clip: text;
+		-webkit-text-fill-color: transparent;
+	}
+</style>

@@ -1,0 +1,19 @@
+{
+  "name": "padsync",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "dev:phone": "pnpm --filter phone-pwa dev",
+    "dev:phone:host": "pnpm --filter phone-pwa dev --host",
+    "dev:desktop": "pnpm --filter desktop dev",
+    "dev:electron": "pnpm --filter desktop dev:all",
+    "dev:server": "pnpm --filter server dev",
+    "dev": "npx concurrently \"pnpm run dev:server\" \"pnpm run dev:desktop\" \"pnpm run dev:phone\"",
+    "dev:host": "npx concurrently \"pnpm run dev:server\" \"pnpm run dev:desktop --host\" \"pnpm run dev:phone:host\"",
+    "build:electron": "pnpm --filter desktop build:electron",
+    "install:all": "pnpm install"
+  },
+  "devDependencies": {
+    "sharp": "^0.34.5"
+  }
+}

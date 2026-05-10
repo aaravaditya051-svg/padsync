@@ -1,0 +1,36 @@
+/* PadSync Global Styles — Design System */
+:root {
+  --color-bg: #EEF0F8;
+  --color-card: #FFFFFF;
+  --color-deep-ink: #2D3158;
+  --color-muted-slate: #8A8FA8;
+  --color-ghost-border: rgba(160, 170, 210, 0.18);
+  --color-iris-purple: #7B7FD4;
+  --color-soft-violet: #B48FE0;
+  --color-success-green: #3DD68C;
+  --color-alert-red: #E05A6A;
+  --color-warm-yellow: #FFD166;
+  --gradient-brand: linear-gradient(135deg, #7B7FD4, #B48FE0);
+  --gradient-card: linear-gradient(135deg, #C9CCEE 0%, #E8D5F5 50%, #F5DAEA 100%);
+  --radius-sm: 6px;
+  --radius-md: 10px;
+  --radius-lg: 14px;
+  --radius-xl: 20px;
+  --radius-pill: 99px;
+  --font-main: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  --font-mono: 'JetBrains Mono', monospace;
+}
+
+*, *::before, *::after { box-sizing: border-box; }
+
+html, body, #root {
+  margin: 0;
+  padding: 0;
+  width: 100%;
+  height: 100%;
+  font-family: var(--font-main);
+  background: var(--color-bg);
+  color: var(--color-deep-ink);
+  -webkit-font-smoothing: antialiased;
+  overflow: hidden;
+}

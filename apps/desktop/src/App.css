@@ -1,0 +1,244 @@
+/* responsibility: single-file styles for desktop canvas layout */
+
+.desktop-app {
+  width: 100%;
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+  background: var(--color-bg);
+  overflow: hidden;
+}
+
+.topbar {
+  height: 44px;
+  background: var(--color-card);
+  border-bottom: 1px solid var(--color-ghost-border);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 16px;
+  flex-shrink: 0;
+  z-index: 10;
+}
+
+.wordmark {
+  font-size: 20px;
+  font-weight: 700;
+  color: var(--color-deep-ink);
+}
+
+.topbar-right {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.status-pill {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: rgba(255,255,255,0.72);
+  border: 1px solid rgba(160,170,210,0.25);
+  border-radius: var(--radius-pill);
+  padding: 4px 12px;
+  font-size: 11px;
+  font-weight: 500;
+  color: var(--color-muted-slate);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  backdrop-filter: blur(8px);
+}
+
+.room-code-pill {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--color-deep-ink);
+  letter-spacing: 0.08em;
+}
+
+.status-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--color-muted-slate);
+}
+.status-dot.connected { background: var(--color-success-green); }
+.status-dot.searching { animation: pulse 1.4s ease-in-out infinite; }
+
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.3; }
+}
+
+.main-area {
+  flex: 1;
+  display: flex;
+  overflow: hidden;
+}
+
+.sidebar {
+  width: 180px;
+  flex-shrink: 0;
+  background: rgba(255,255,255,0.5);
+  border-right: 1px solid var(--color-ghost-border);
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.sidebar-label {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--color-deep-ink);
+  margin-bottom: 8px;
+}
+
+.sidebar-hint {
+  font-size: 13px;
+  color: var(--color-muted-slate);
+}
+
+.canvas-area {
+  flex: 1;
+  background: var(--color-card);
+  position: relative;
+}
+
+.canvas-placeholder {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 13px;
+  color: var(--color-muted-slate);
+}
+
+/* ===== QR CODE PANEL ===== */
+.qr-panel {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  padding: 12px;
+  background: var(--gradient-card);
+  border-radius: var(--radius-lg);
+}
+
+.qr-panel.connected {
+  background: rgba(61, 214, 140, 0.08);
+  border: 1px solid rgba(61, 214, 140, 0.25);
+}
+
+.qr-label {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--color-muted-slate);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.qr-code-box {
+  padding: 8px;
+  background: #fff;
+  border-radius: var(--radius-md);
+}
+
+.qr-room-code {
+  font-family: var(--font-mono);
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--color-deep-ink);
+  letter-spacing: 0.1em;
+}
+
+.qr-hint {
+  font-size: 10px;
+  color: var(--color-muted-slate);
+  text-align: center;
+}
+
+.qr-connected-badge {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--color-success-green);
+}
+
+/* ===== STATS BAR ===== */
+.stats-bar {
+  height: 36px;
+  background: var(--color-card);
+  border-top: 1px solid var(--color-ghost-border);
+  display: flex;
+  align-items: center;
+  padding: 0 16px;
+  gap: 16px;
+  flex-shrink: 0;
+}
+
+.stats-item {
+  font-size: 11px;
+  color: var(--color-muted-slate);
+}
+
+.latency-badge {
+  font-size: 11px;
+  font-weight: 500;
+}
+
+.debug-toggle {
+  margin-left: auto;
+  font-size: 11px;
+  color: var(--color-muted-slate);
+  cursor: pointer;
+  user-select: none;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.debug-toggle:hover {
+  color: var(--color-iris-purple);
+}
+
+/* ===== EXPORT PANEL ===== */
+.export-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.export-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.export-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 8px 12px;
+  background: var(--color-bg);
+  border: 1px solid var(--color-ghost-border);
+  border-radius: var(--radius-md);
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--color-deep-ink);
+  cursor: pointer;
+  transition: all 0.15s;
+}
+
+.export-btn:hover:not(:disabled) {
+  background: rgba(123, 127, 212, 0.08);
+  border-color: var(--color-iris-purple);
+  color: var(--color-iris-purple);
+}
+
+.export-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
