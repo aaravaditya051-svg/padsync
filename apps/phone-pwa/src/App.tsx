@@ -16,8 +16,6 @@ export default function App() {
   const store = useSyncStore(joined ? roomCode : null);
 
   useEffect(() => {
-    socket.connect();
-
     socket.on(SOCKET_EVENTS.ROOM_JOINED, () => {
       setJoined(true);
       setError('');
@@ -32,9 +30,17 @@ export default function App() {
     const urlRoom = getRoomFromUrl();
     if (urlRoom) {
       setRoomCode(urlRoom.toUpperCase());
-      socket.once('connect', () => {
+      if (socket.connected) {
         socket.emit(SOCKET_EVENTS.JOIN_ROOM, { roomId: urlRoom.toUpperCase() });
-      });
+      } else {
+        socket.once('connect', () => {
+          socket.emit(SOCKET_EVENTS.JOIN_ROOM, { roomId: urlRoom.toUpperCase() });
+        });
+      }
+    }
+
+    if (!socket.connected) {
+      socket.connect();
     }
 
     return () => {

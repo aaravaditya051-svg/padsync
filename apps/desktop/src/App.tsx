@@ -28,12 +28,6 @@ export default function App() {
       socket.emit(SOCKET_EVENTS.CREATE_ROOM);
     });
 
-    if (socket.connected) {
-      socket.emit(SOCKET_EVENTS.CREATE_ROOM);
-    } else {
-      socket.connect();
-    }
-
     socket.on(SOCKET_EVENTS.ROOM_CREATED, ({ roomId }: { roomId: string }) => {
       setRoomId(roomId);
     });
@@ -46,6 +40,12 @@ export default function App() {
     socket.on(SOCKET_EVENTS.TLDRAW_PATCH, () => {
       setStrokeCount((c) => c + 1);
     });
+
+    if (socket.connected) {
+      socket.emit(SOCKET_EVENTS.CREATE_ROOM);
+    } else {
+      socket.connect();
+    }
 
     return () => {
       socket.off('connect');
