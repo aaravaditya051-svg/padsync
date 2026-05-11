@@ -16,20 +16,25 @@ export function setupSocketManager(io: Server) {
     });
 
     socket.on(SOCKET_EVENTS.JOIN_ROOM, ({ roomId }: { roomId: string }) => {
-      const normalizedRoomId = roomId.toUpperCase();
-      const room = io.sockets.adapter.rooms.get(normalizedRoomId);
+      const normalizedRoomId = (roomId || '').trim().toUpperCase();
       
-      console.log(`Join attempt for room: ${normalizedRoomId} by ${socket.id}`);
-      console.log(`Available rooms:`, Array.from(io.sockets.adapter.rooms.keys()));
+      console.log(`--- Join Request ---`);
+      console.log(`Socket: ${socket.id}`);
+      console.log(`Target Room: ${normalizedRoomId}`);
+      console.log(`All Active Rooms:`, Array.from(io.sockets.adapter.rooms.keys()));
+      
+      const room = io.sockets.adapter.rooms.get(normalizedRoomId);
 
       if (room) {
         socket.join(normalizedRoomId);
         socket.emit(SOCKET_EVENTS.ROOM_JOINED, { roomId: normalizedRoomId });
         socket.to(normalizedRoomId).emit(SOCKET_EVENTS.PHONE_CONNECTED);
-        console.log(`Socket ${socket.id} successfully joined room: ${normalizedRoomId}`);
+        console.log(`SUCCESS: ${socket.id} joined ${normalizedRoomId}`);
       } else {
-        console.warn(`Join failed: Room ${normalizedRoomId} not found`);
-        socket.emit(SOCKET_EVENTS.ROOM_ERROR, { message: `Room ${normalizedRoomId} not found` });
+        console.warn(`FAILED: Room ${normalizedRoomId} not found in active list`);
+        socket.emit(SOCKET_EVENTS.ROOM_ERROR, { 
+          message: `Room ${normalizedRoomId} not found. Please refresh the desktop app to get a new code.` 
+        });
       }
     });
 
