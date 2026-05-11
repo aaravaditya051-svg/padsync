@@ -1,6 +1,6 @@
 // responsibility: manages socket connection lifecycle and relaying for rooms
 import { Server, Socket } from 'socket.io';
-import { SOCKET_EVENTS } from 'shared/events';
+import { SOCKET_EVENTS } from '../events';
 import { generateRoomCode } from '../utils/roomCode';
 
 export function setupSocketManager(io: Server) {
