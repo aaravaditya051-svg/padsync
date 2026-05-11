@@ -1,0 +1,12 @@
+[build]
+  command = "npm run build"
+  publish = "dist"
+
+[build.environment]
+  VITE_SOCKET_URL = "https://server-production-4444.up.railway.app"
+  VITE_PHONE_APP_URL = "https://padsync.netlify.app"
+
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
+  status = 200
