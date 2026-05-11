@@ -16,6 +16,17 @@ export default function App() {
   const store = useSyncStore(joined ? roomCode : null);
 
   useEffect(() => {
+    socket.on('disconnect', (reason) => {
+      console.warn('Socket disconnected:', reason);
+      setJoined(false);
+      setError(`Disconnected: ${reason}. Please reconnect.`);
+    });
+
+    socket.on('connect_error', (err) => {
+      console.error('Socket connection error:', err);
+      setError(`Connection error: ${err.message}`);
+    });
+
     socket.on(SOCKET_EVENTS.ROOM_JOINED, () => {
       setJoined(true);
       setError('');
@@ -44,6 +55,8 @@ export default function App() {
     }
 
     return () => {
+      socket.off('disconnect');
+      socket.off('connect_error');
       socket.off(SOCKET_EVENTS.ROOM_JOINED);
       socket.off(SOCKET_EVENTS.ROOM_ERROR);
       socket.disconnect();

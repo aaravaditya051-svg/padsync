@@ -20,7 +20,10 @@ const io = new Server(server, {
   cors: {
     origin: '*',
     methods: ['GET', 'POST']
-  }
+  },
+  maxHttpBufferSize: 1e7, // 10MB
+  pingTimeout: 60000,
+  pingInterval: 25000
 });
 
 setupSocketManager(io);

@@ -13,17 +13,23 @@ export function useSyncStore(roomId: string | null) {
     if (!roomId) return;
 
     const handleRemotePatch = ({ patch }: { patch: any }) => {
+      console.log('Remote patch received from phone:', patch);
       store.mergeRemoteChanges(() => {
         const { added, updated, removed } = patch;
         
         if (added) {
-          store.put(Object.values(added) as any[]);
+          const shapesOnly = Object.values(added).filter((record: any) => record.id.startsWith('shape:'));
+          if (shapesOnly.length > 0) store.put(shapesOnly as any[]);
         }
         if (updated) {
-          store.put(Object.values(updated).map((u: any) => u[1]));
+          const shapesOnly = Object.values(updated)
+            .map((u: any) => u[1])
+            .filter((record: any) => record.id.startsWith('shape:'));
+          if (shapesOnly.length > 0) store.put(shapesOnly as any[]);
         }
         if (removed) {
-          store.remove(Object.keys(removed) as any[]);
+          const shapesOnly = Object.keys(removed).filter((id) => id.startsWith('shape:'));
+          if (shapesOnly.length > 0) store.remove(shapesOnly as any[]);
         }
       });
     };
