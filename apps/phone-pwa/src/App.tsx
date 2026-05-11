@@ -102,6 +102,12 @@ export default function App() {
         <div className="status-pill">
           <div className="status-dot connected" />
           Connected
+          <button 
+            onClick={() => window.location.reload()} 
+            style={{ marginLeft: '8px', border: 'none', background: 'none', cursor: 'pointer', fontSize: '10px' }}
+          >
+            🔄
+          </button>
         </div>
       </div>
 

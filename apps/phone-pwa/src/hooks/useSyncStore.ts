@@ -43,31 +43,34 @@ export function useSyncStore(roomId: string | null) {
 
     socket.on(SOCKET_EVENTS.TLDRAW_PATCH, handleRemotePatch);
 
-    let throttleTimer: any = null;
-    let pendingChanges: any = null;
-
     const unlisten = store.listen(
       (entry) => {
         if (entry.source !== 'user') return;
         
-        // Accumulate changes
-        if (!pendingChanges) {
-          pendingChanges = { added: {}, updated: {}, removed: {} };
-        }
-        
         const { added, updated, removed } = entry.changes;
-        Object.assign(pendingChanges.added, added);
-        Object.assign(pendingChanges.updated, updated);
-        Object.assign(pendingChanges.removed, removed);
+        
+        // Filter to only sync SHAPES. Ignore camera, user presence, etc.
+        const filteredAdded = Object.fromEntries(
+          Object.entries(added).filter(([id]) => id.startsWith('shape:'))
+        );
+        const filteredUpdated = Object.fromEntries(
+          Object.entries(updated).filter(([id]) => id.startsWith('shape:'))
+        );
+        const filteredRemoved = Object.fromEntries(
+          Object.entries(removed).filter(([id]) => id.startsWith('shape:'))
+        );
 
-        if (!throttleTimer) {
-          throttleTimer = setTimeout(() => {
-            if (pendingChanges) {
-              socket.emit(SOCKET_EVENTS.TLDRAW_PATCH, { roomId, patch: pendingChanges });
-              pendingChanges = null;
-            }
-            throttleTimer = null;
-          }, 32); // ~30fps
+        const hasChanges = 
+          Object.keys(filteredAdded).length > 0 || 
+          Object.keys(filteredUpdated).length > 0 || 
+          Object.keys(filteredRemoved).length > 0;
+
+        if (hasChanges) {
+          console.log('Sending filtered patch to desktop:', { added: filteredAdded, updated: filteredUpdated, removed: filteredRemoved });
+          socket.emit(SOCKET_EVENTS.TLDRAW_PATCH, { 
+            roomId, 
+            patch: { added: filteredAdded, updated: filteredUpdated, removed: filteredRemoved } 
+          });
         }
       },
       { source: 'user', scope: 'document' }
@@ -76,7 +79,6 @@ export function useSyncStore(roomId: string | null) {
     return () => {
       socket.off(SOCKET_EVENTS.TLDRAW_PATCH, handleRemotePatch);
       unlisten();
-      if (throttleTimer) clearTimeout(throttleTimer);
     };
   }, [roomId, store]);
 
