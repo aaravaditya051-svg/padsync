@@ -73,26 +73,34 @@ export default function App() {
   return (
     <div className="desktop-app">
       {/* Version Tag for Hard Check */}
-      <div style={{ position: 'fixed', bottom: 10, right: 10, fontSize: '10px', color: 'rgba(255,255,255,0.2)', zIndex: 9999 }}>
-        Live Build: d031f1fc (Railway Check)
+      <div style={{ position: 'fixed', bottom: 10, right: 10, fontSize: '12px', fontWeight: 'bold', color: '#ff00ff', zIndex: 9999, background: 'rgba(0,0,0,0.8)', padding: '4px 8px', borderRadius: '4px' }}>
+        BUILD: v2.1-RESILIENT-SYNC
       </div>
       {/* Top bar */}
       <div className="topbar">
         <span className="wordmark">PadSync</span>
         <div className="topbar-right">
           {serverError && (
-            <div className="status-pill" style={{ color: 'red' }}>
-              {serverError}
+            <div className="status-pill" style={{ color: 'white', background: 'red', fontWeight: 'bold' }}>
+              ERROR: {serverError}
             </div>
           )}
-          <div className="status-pill">
+          <div className="status-pill" onClick={() => socket.connect()} style={{ cursor: 'pointer' }}>
             <div className={`status-dot ${serverConnected ? 'connected' : 'searching'}`} />
-            {serverConnected ? 'Server Connected' : 'Connecting...'}
+            {serverConnected ? 'Server Connected' : 'Connecting (Click to Retry)...'}
           </div>
-          {roomId && (
+          {roomId ? (
             <div className="status-pill room-code-pill">
               Room: {roomId}
             </div>
+          ) : (
+            <button 
+              className="status-pill" 
+              onClick={() => socket.emit(SOCKET_EVENTS.CREATE_ROOM)}
+              style={{ background: '#444', color: 'white', border: 'none', cursor: 'pointer' }}
+            >
+              Get Room Code
+            </button>
           )}
           <div className="status-pill">
             <div className={`status-dot ${phoneConnected ? 'connected' : 'searching'}`} />
