@@ -58,6 +58,10 @@ export default function App() {
 
   return (
     <div className="desktop-app">
+      {/* Version Tag for Hard Check */}
+      <div style={{ position: 'fixed', bottom: 10, right: 10, fontSize: '10px', color: 'rgba(255,255,255,0.2)', zIndex: 9999 }}>
+        Live Build: d031f1fc (Railway Check)
+      </div>
       {/* Top bar */}
       <div className="topbar">
         <span className="wordmark">PadSync</span>
