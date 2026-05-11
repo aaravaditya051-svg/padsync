@@ -107,7 +107,11 @@ export default function App() {
 
       <div className="canvas-wrapper">
         <div className="canvas-inner">
-          <Tldraw store={store} />
+          {joined ? (
+            <Tldraw store={store} />
+          ) : (
+            <div className="canvas-placeholder">Initializing canvas...</div>
+          )}
         </div>
       </div>
     </div>

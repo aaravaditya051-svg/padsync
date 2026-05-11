@@ -12,34 +12,63 @@ export function useSyncStore(roomId: string | null) {
   useEffect(() => {
     if (!roomId) return;
 
-    const handleRemotePatch = ({ patch }: { patch: any }) => {
+    const handleRemotePatch = (data: any) => {
+      if (!data || !data.patch) return;
+      const { patch } = data;
       console.log('Remote patch received:', patch);
-      store.mergeRemoteChanges(() => {
-        const { added, updated, removed } = patch;
-        
-        if (added) {
-          const shapesOnly = Object.values(added).filter((record: any) => record.id.startsWith('shape:'));
-          if (shapesOnly.length > 0) store.put(shapesOnly as any[]);
-        }
-        if (updated) {
-          const shapesOnly = Object.values(updated)
-            .map((u: any) => u[1])
-            .filter((record: any) => record.id.startsWith('shape:'));
-          if (shapesOnly.length > 0) store.put(shapesOnly as any[]);
-        }
-        if (removed) {
-          const shapesOnly = Object.keys(removed).filter((id) => id.startsWith('shape:'));
-          if (shapesOnly.length > 0) store.remove(shapesOnly as any[]);
-        }
-      });
+      
+      try {
+        store.mergeRemoteChanges(() => {
+          const { added, updated, removed } = patch;
+          
+          if (added) {
+            const shapesOnly = Object.values(added).filter((record: any) => record && record.id && record.id.startsWith('shape:'));
+            if (shapesOnly.length > 0) store.put(shapesOnly as any[]);
+          }
+          if (updated) {
+            const shapesOnly = Object.values(updated)
+              .map((u: any) => u && u[1])
+              .filter((record: any) => record && record.id && record.id.startsWith('shape:'));
+            if (shapesOnly.length > 0) store.put(shapesOnly as any[]);
+          }
+          if (removed) {
+            const shapesOnly = Object.keys(removed).filter((id) => id && id.startsWith('shape:'));
+            if (shapesOnly.length > 0) store.remove(shapesOnly as any[]);
+          }
+        });
+      } catch (err) {
+        console.error('Failed to apply remote patch:', err);
+      }
     };
 
     socket.on(SOCKET_EVENTS.TLDRAW_PATCH, handleRemotePatch);
 
+    let throttleTimer: any = null;
+    let pendingChanges: any = null;
+
     const unlisten = store.listen(
       (entry) => {
         if (entry.source !== 'user') return;
-        socket.emit(SOCKET_EVENTS.TLDRAW_PATCH, { roomId, patch: entry.changes });
+        
+        // Accumulate changes
+        if (!pendingChanges) {
+          pendingChanges = { added: {}, updated: {}, removed: {} };
+        }
+        
+        const { added, updated, removed } = entry.changes;
+        Object.assign(pendingChanges.added, added);
+        Object.assign(pendingChanges.updated, updated);
+        Object.assign(pendingChanges.removed, removed);
+
+        if (!throttleTimer) {
+          throttleTimer = setTimeout(() => {
+            if (pendingChanges) {
+              socket.emit(SOCKET_EVENTS.TLDRAW_PATCH, { roomId, patch: pendingChanges });
+              pendingChanges = null;
+            }
+            throttleTimer = null;
+          }, 32); // ~30fps
+        }
       },
       { source: 'user', scope: 'document' }
     );
@@ -47,6 +76,7 @@ export function useSyncStore(roomId: string | null) {
     return () => {
       socket.off(SOCKET_EVENTS.TLDRAW_PATCH, handleRemotePatch);
       unlisten();
+      if (throttleTimer) clearTimeout(throttleTimer);
     };
   }, [roomId, store]);
 

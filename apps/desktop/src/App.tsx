@@ -88,7 +88,7 @@ export default function App() {
     <div className="desktop-app">
       {/* Version Tag for Hard Check */}
       <div style={{ position: 'fixed', bottom: 10, right: 10, fontSize: '12px', fontWeight: 'bold', color: '#ff00ff', zIndex: 9999, background: 'rgba(0,0,0,0.8)', padding: '4px 8px', borderRadius: '4px' }}>
-        BUILD: v2.3-RECENTER-SYNC
+        BUILD: v3.0-STABLE-SYNC
       </div>
       {/* Top bar */}
       <div className="topbar">
