@@ -1,5 +1,5 @@
 // responsibility: Handles exporting the tldraw canvas to PNG and PDF
-import { Editor, exportToBlob } from 'tldraw';
+import { Editor, exportAs, type TLShapeId } from 'tldraw';
 import { jsPDF } from 'jspdf';
 import { Download, FileImage, FileText } from 'lucide-react';
 import { useState } from 'react';
@@ -11,9 +11,9 @@ interface ExportPanelProps {
 export function ExportPanel({ editor }: ExportPanelProps) {
   const [isExporting, setIsExporting] = useState(false);
 
-  const getShapeIds = () => {
+  const getShapeIds = (): TLShapeId[] => {
     if (!editor) return [];
-    return Array.from(editor.getCurrentPageShapeIds());
+    return Array.from(editor.getCurrentPageShapeIds()) as TLShapeId[];
   };
 
   const handleExportPNG = async () => {
@@ -23,19 +23,11 @@ export function ExportPanel({ editor }: ExportPanelProps) {
 
     setIsExporting(true);
     try {
-      const blob = await exportToBlob({
-        editor,
-        ids: shapeIds,
+      await exportAs(editor, shapeIds, {
         format: 'png',
-        opts: { padding: 32, background: true },
+        name: `padsync-export-${Date.now()}`,
+        background: true,
       });
-
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = `padsync-export-${Date.now()}.png`;
-      a.click();
-      URL.revokeObjectURL(url);
     } catch (err) {
       console.error('Failed to export PNG:', err);
     } finally {
@@ -50,51 +42,56 @@ export function ExportPanel({ editor }: ExportPanelProps) {
 
     setIsExporting(true);
     try {
-      // Tldraw exports as PNG/SVG. We'll export as high-res PNG and embed it into a PDF
-      const blob = await exportToBlob({
-        editor,
-        ids: shapeIds,
-        format: 'png',
-        opts: { padding: 32, background: true, scale: 2 },
-      });
-
-      const buffer = await blob.arrayBuffer();
-      const base64 = Buffer.from(buffer).toString('base64');
-      const imgData = `data:image/png;base64,${base64}`;
-
-      // Create PDF matching A4 aspect ratio roughly
-      const pdf = new jsPDF({
-        orientation: 'landscape',
-        unit: 'px',
-        format: [842, 595], // A4 Landscape roughly
-      });
-
-      // Get image dimensions
+      // Bypass missing type definition for getSvg
+      const svg = await (editor as any).getSvg(shapeIds, { padding: 32, background: true });
+      if (!svg) throw new Error('Failed to get SVG');
+      
+      const svgString = new XMLSerializer().serializeToString(svg);
+      const canvas = document.createElement('canvas');
+      const ctx = canvas.getContext('2d');
       const img = new Image();
-      img.src = imgData;
-      await new Promise((resolve) => { img.onload = resolve; });
+      const svgBlob = new Blob([svgString], { type: 'image/svg+xml;charset=utf-8' });
+      const url = URL.createObjectURL(svgBlob);
 
-      // Calculate aspect ratio to fit within PDF page
-      const pdfWidth = pdf.internal.pageSize.getWidth();
-      const pdfHeight = pdf.internal.pageSize.getHeight();
-      const imgRatio = img.width / img.height;
-      const pdfRatio = pdfWidth / pdfHeight;
+      await new Promise((resolve, reject) => {
+        img.onload = () => {
+          canvas.width = img.width * 2; // High res
+          canvas.height = img.height * 2;
+          ctx?.scale(2, 2);
+          ctx?.drawImage(img, 0, 0);
+          const imgData = canvas.toDataURL('image/png');
+          
+          const pdf = new jsPDF({
+            orientation: 'landscape',
+            unit: 'px',
+            format: [842, 595],
+          });
 
-      let drawWidth = pdfWidth;
-      let drawHeight = pdfHeight;
+          const pdfWidth = pdf.internal.pageSize.getWidth();
+          const pdfHeight = pdf.internal.pageSize.getHeight();
+          const imgRatio = img.width / img.height;
+          const pdfRatio = pdfWidth / pdfHeight;
 
-      if (imgRatio > pdfRatio) {
-        drawHeight = pdfWidth / imgRatio;
-      } else {
-        drawWidth = pdfHeight * imgRatio;
-      }
+          let drawWidth = pdfWidth;
+          let drawHeight = pdfHeight;
 
-      // Center the image
-      const x = (pdfWidth - drawWidth) / 2;
-      const y = (pdfHeight - drawHeight) / 2;
+          if (imgRatio > pdfRatio) {
+            drawHeight = pdfWidth / imgRatio;
+          } else {
+            drawWidth = pdfHeight * imgRatio;
+          }
 
-      pdf.addImage(imgData, 'PNG', x, y, drawWidth, drawHeight);
-      pdf.save(`padsync-export-${Date.now()}.pdf`);
+          const x = (pdfWidth - drawWidth) / 2;
+          const y = (pdfHeight - drawHeight) / 2;
+
+          pdf.addImage(imgData, 'PNG', x, y, drawWidth, drawHeight);
+          pdf.save(`padsync-export-${Date.now()}.pdf`);
+          URL.revokeObjectURL(url);
+          resolve(true);
+        };
+        img.onerror = reject;
+        img.src = url;
+      });
     } catch (err) {
       console.error('Failed to export PDF:', err);
     } finally {
