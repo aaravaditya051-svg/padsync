@@ -18,17 +18,10 @@ export function setupSocketManager(io: Server) {
       
       socket.join(roomCode);
       socket.emit(SOCKET_EVENTS.ROOM_CREATED, { roomId: roomCode });
-      
-      console.log(`Room created: ${roomCode} by ${socket.id}`);
-      console.log(`Current Active Rooms:`, Array.from(activeRooms));
     });
 
     socket.on(SOCKET_EVENTS.JOIN_ROOM, ({ roomId }: { roomId: string }) => {
       const normalizedRoomId = (roomId || '').trim().toUpperCase();
-      
-      console.log(`--- Join Request ---`);
-      console.log(`Socket: ${socket.id}`);
-      console.log(`Target Room: ${normalizedRoomId}`);
       
       // Check our explicit tracker instead of socket.io internal state
       if (activeRooms.has(normalizedRoomId)) {
@@ -37,11 +30,7 @@ export function setupSocketManager(io: Server) {
         
         // Notify the desktop that a phone has joined
         socket.to(normalizedRoomId).emit(SOCKET_EVENTS.PHONE_CONNECTED);
-        
-        console.log(`SUCCESS: ${socket.id} joined ${normalizedRoomId}`);
       } else {
-        console.warn(`FAILED: Room ${normalizedRoomId} not found in activeRooms tracker`);
-        console.log(`Available:`, Array.from(activeRooms));
         
         socket.emit(SOCKET_EVENTS.ROOM_ERROR, { 
           message: `Room ${normalizedRoomId} not found. Please refresh the desktop app to get a new code.` 

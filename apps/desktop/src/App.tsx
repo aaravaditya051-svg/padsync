@@ -24,11 +24,15 @@ export default function App() {
   const latencyMs = useLatency(phoneConnected && debugMode);
 
   useEffect(() => {
-    socket.connect();
-
     socket.on('connect', () => {
       socket.emit(SOCKET_EVENTS.CREATE_ROOM);
     });
+
+    if (socket.connected) {
+      socket.emit(SOCKET_EVENTS.CREATE_ROOM);
+    } else {
+      socket.connect();
+    }
 
     socket.on(SOCKET_EVENTS.ROOM_CREATED, ({ roomId }: { roomId: string }) => {
       setRoomId(roomId);
