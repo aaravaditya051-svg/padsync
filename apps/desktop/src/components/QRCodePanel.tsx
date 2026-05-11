@@ -8,7 +8,15 @@ interface QRCodePanelProps {
 
 // The phone URL to embed in the QR code — points to the phone app with the room pre-filled
 function buildPhoneUrl(roomId: string): string {
-  // Use the current network hostname (e.g. 192.168.x.x) so the phone can reach the dev server
+  const phoneAppUrl = import.meta.env.VITE_PHONE_APP_URL;
+  
+  if (phoneAppUrl) {
+    // Ensure no double slash if the URL has a trailing one
+    const baseUrl = phoneAppUrl.endsWith('/') ? phoneAppUrl.slice(0, -1) : phoneAppUrl;
+    return `${baseUrl}/?room=${roomId}`;
+  }
+
+  // Fallback for local dev if env not set
   const hostname = typeof window !== 'undefined' ? window.location.hostname : 'localhost';
   return `http://${hostname}:5173/?room=${roomId}`;
 }
