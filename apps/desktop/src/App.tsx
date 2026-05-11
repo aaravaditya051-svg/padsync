@@ -49,11 +49,6 @@ export default function App() {
       setPhoneConnected(true);
     });
 
-    // Count strokes relayed to the desktop
-    socket.on(SOCKET_EVENTS.TLDRAW_PATCH, () => {
-      setStrokeCount((c) => c + 1);
-    });
-
     if (socket.connected) {
       setServerConnected(true);
       socket.emit(SOCKET_EVENTS.CREATE_ROOM);
@@ -63,18 +58,37 @@ export default function App() {
 
     return () => {
       socket.off('connect');
+      socket.off('disconnect');
+      socket.off('connect_error');
       socket.off(SOCKET_EVENTS.ROOM_CREATED);
       socket.off(SOCKET_EVENTS.PHONE_CONNECTED);
-      socket.off(SOCKET_EVENTS.TLDRAW_PATCH);
       socket.disconnect();
     };
   }, []);
+
+  // Separate effect for TLDRAW_PATCH to ensure 'editor' is not stale
+  useEffect(() => {
+    const handlePatch = () => {
+      setStrokeCount((c) => c + 1);
+      if (editor) {
+        // Zoom to fit new content after a short delay for store application
+        setTimeout(() => {
+          editor.zoomToFit({ animation: { duration: 300 } });
+        }, 50);
+      }
+    };
+
+    socket.on(SOCKET_EVENTS.TLDRAW_PATCH, handlePatch);
+    return () => {
+      socket.off(SOCKET_EVENTS.TLDRAW_PATCH, handlePatch);
+    };
+  }, [editor]);
 
   return (
     <div className="desktop-app">
       {/* Version Tag for Hard Check */}
       <div style={{ position: 'fixed', bottom: 10, right: 10, fontSize: '12px', fontWeight: 'bold', color: '#ff00ff', zIndex: 9999, background: 'rgba(0,0,0,0.8)', padding: '4px 8px', borderRadius: '4px' }}>
-        BUILD: v2.1-RESILIENT-SYNC
+        BUILD: v2.3-RECENTER-SYNC
       </div>
       {/* Top bar */}
       <div className="topbar">
@@ -119,6 +133,13 @@ export default function App() {
           <div>
             <div className="sidebar-label">Canvas</div>
             <div className="sidebar-hint">Draw on your phone — strokes appear here live.</div>
+            <button 
+              className="export-btn" 
+              style={{ marginTop: '12px', width: '100%' }}
+              onClick={() => editor?.zoomToFit()}
+            >
+              🔭 Recenter View
+            </button>
           </div>
           <ExportPanel editor={editor} />
         </div>
