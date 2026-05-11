@@ -16,6 +16,8 @@ import { ExportPanel } from './components/ExportPanel';
 export default function App() {
   const [roomId, setRoomId] = useState<string | null>(null);
   const [phoneConnected, setPhoneConnected] = useState(false);
+  const [serverConnected, setServerConnected] = useState(false);
+  const [serverError, setServerError] = useState<string | null>(null);
   const [debugMode, setDebugMode] = useState(false);
   const [strokeCount, setStrokeCount] = useState(0);
   const [editor, setEditor] = useState<Editor | null>(null);
@@ -25,7 +27,18 @@ export default function App() {
 
   useEffect(() => {
     socket.on('connect', () => {
+      setServerConnected(true);
+      setServerError(null);
       socket.emit(SOCKET_EVENTS.CREATE_ROOM);
+    });
+
+    socket.on('disconnect', () => {
+      setServerConnected(false);
+    });
+
+    socket.on('connect_error', (err) => {
+      setServerConnected(false);
+      setServerError(`Connection error: ${err.message}`);
     });
 
     socket.on(SOCKET_EVENTS.ROOM_CREATED, ({ roomId }: { roomId: string }) => {
@@ -42,6 +55,7 @@ export default function App() {
     });
 
     if (socket.connected) {
+      setServerConnected(true);
       socket.emit(SOCKET_EVENTS.CREATE_ROOM);
     } else {
       socket.connect();
@@ -66,6 +80,15 @@ export default function App() {
       <div className="topbar">
         <span className="wordmark">PadSync</span>
         <div className="topbar-right">
+          {serverError && (
+            <div className="status-pill" style={{ color: 'red' }}>
+              {serverError}
+            </div>
+          )}
+          <div className="status-pill">
+            <div className={`status-dot ${serverConnected ? 'connected' : 'searching'}`} />
+            {serverConnected ? 'Server Connected' : 'Connecting...'}
+          </div>
           {roomId && (
             <div className="status-pill room-code-pill">
               Room: {roomId}
