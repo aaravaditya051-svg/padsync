@@ -1,5 +1,5 @@
 // responsibility: desktop app root — QR pairing, live canvas, stats bar with latency
-// PadSync Web Dashboard - Fresh Build Trigger
+// PadSync Web Dashboard - Build Trigger v2.2 (Base Dir Fixed)
 import { useEffect, useState } from 'react';
 import { Tldraw, Editor } from 'tldraw';
 import 'tldraw/tldraw.css';
