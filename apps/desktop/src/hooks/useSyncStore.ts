@@ -45,31 +45,19 @@ export function useSyncStore(roomId: string | null) {
 
     const unlisten = store.listen(
       (entry) => {
-        if (entry.source !== 'user') return;
-        
-        const { added, updated, removed } = entry.changes;
-        
-        const filteredAdded = Object.fromEntries(
-          Object.entries(added).filter(([id]) => id.startsWith('shape:'))
-        );
-        const filteredUpdated = Object.fromEntries(
-          Object.entries(updated).filter(([id]) => id.startsWith('shape:'))
-        );
-        const filteredRemoved = Object.fromEntries(
-          Object.entries(removed).filter(([id]) => id.startsWith('shape:'))
-        );
+        try {
+          if (entry.source !== 'user') return;
+          const { added, updated, removed } = entry.changes;
+          const filteredAdded = Object.fromEntries(Object.entries(added).filter(([id]) => id.startsWith('shape:')));
+          const filteredUpdated = Object.fromEntries(Object.entries(updated).filter(([id]) => id.startsWith('shape:')));
+          const filteredRemoved = Object.fromEntries(Object.entries(removed).filter(([id]) => id.startsWith('shape:')));
 
-        const hasChanges = 
-          Object.keys(filteredAdded).length > 0 || 
-          Object.keys(filteredUpdated).length > 0 || 
-          Object.keys(filteredRemoved).length > 0;
-
-        if (hasChanges) {
-          console.log('Sending filtered patch to phone:', { added: filteredAdded, updated: filteredUpdated, removed: filteredRemoved });
-          socket.emit(SOCKET_EVENTS.TLDRAW_PATCH, { 
-            roomId, 
-            patch: { added: filteredAdded, updated: filteredUpdated, removed: filteredRemoved } 
-          });
+          if (Object.keys(filteredAdded).length > 0 || Object.keys(filteredUpdated).length > 0 || Object.keys(filteredRemoved).length > 0) {
+            console.log('Sending filtered patch to phone:', { added: Object.keys(filteredAdded), updated: Object.keys(filteredUpdated), removed: Object.keys(filteredRemoved) });
+            socket.emit(SOCKET_EVENTS.TLDRAW_PATCH, { roomId, patch: { added: filteredAdded, updated: filteredUpdated, removed: filteredRemoved } });
+          }
+        } catch (err) {
+          console.error('Error in desktop store listener:', err);
         }
       },
       { source: 'user', scope: 'document' }
