@@ -9,6 +9,8 @@ import { SOCKET_EVENTS } from 'shared/events';
 import { useSyncStore } from './hooks/useSyncStore';
 import { getRoomFromUrl } from './utils/getRoomFromUrl';
 
+import { ErrorBoundary } from './components/ErrorBoundary';
+
 export default function App() {
   const [roomCode, setRoomCode] = useState('');
   const [joined, setJoined] = useState(false);
@@ -16,10 +18,18 @@ export default function App() {
   const store = useSyncStore(joined ? roomCode : null);
 
   useEffect(() => {
+    console.log('App effect started. Socket ID:', socket.id);
+
+    socket.on('connect', () => {
+      console.log('Socket connected successfully');
+    });
+
     socket.on('disconnect', (reason) => {
       console.warn('Socket disconnected:', reason);
-      setJoined(false);
-      setError(`Disconnected: ${reason}. Please reconnect.`);
+      if (reason === 'io server disconnect' || reason === 'transport close') {
+        setJoined(false);
+        setError(`Disconnected: ${reason}. Please reconnect.`);
+      }
     });
 
     socket.on('connect_error', (err) => {
@@ -27,12 +37,14 @@ export default function App() {
       setError(`Connection error: ${err.message}`);
     });
 
-    socket.on(SOCKET_EVENTS.ROOM_JOINED, () => {
+    socket.on(SOCKET_EVENTS.ROOM_JOINED, (data) => {
+      console.log('Joined room:', data);
       setJoined(true);
       setError('');
     });
 
     socket.on(SOCKET_EVENTS.ROOM_ERROR, (err: any) => {
+      console.error('Room error:', err);
       setError(err.message || 'Room not found. Check the code and try again.');
       setJoined(false);
     });
@@ -40,6 +52,7 @@ export default function App() {
     // Auto-join if QR code was scanned (URL has ?room=XXXX)
     const urlRoom = getRoomFromUrl();
     if (urlRoom) {
+      console.log('Auto-joining from URL:', urlRoom);
       setRoomCode(urlRoom.toUpperCase());
       if (socket.connected) {
         socket.emit(SOCKET_EVENTS.JOIN_ROOM, { roomId: urlRoom.toUpperCase() });
@@ -55,17 +68,18 @@ export default function App() {
     }
 
     return () => {
+      socket.off('connect');
       socket.off('disconnect');
       socket.off('connect_error');
       socket.off(SOCKET_EVENTS.ROOM_JOINED);
       socket.off(SOCKET_EVENTS.ROOM_ERROR);
-      socket.disconnect();
     };
   }, []);
 
   const handleJoin = (e: React.FormEvent) => {
     e.preventDefault();
     if (!roomCode.trim()) return;
+    console.log('Manually joining room:', roomCode);
     socket.emit(SOCKET_EVENTS.JOIN_ROOM, { roomId: roomCode.toUpperCase() });
   };
 
@@ -112,13 +126,15 @@ export default function App() {
       </div>
 
       <div className="canvas-wrapper">
-        <div className="canvas-inner">
-          {joined ? (
-            <Tldraw store={store} />
-          ) : (
-            <div className="canvas-placeholder">Initializing canvas...</div>
-          )}
-        </div>
+        <ErrorBoundary>
+          <div className="canvas-inner">
+            {joined ? (
+              <Tldraw store={store} autoFocus />
+            ) : (
+              <div className="canvas-placeholder">Initializing canvas...</div>
+            )}
+          </div>
+        </ErrorBoundary>
       </div>
     </div>
   );

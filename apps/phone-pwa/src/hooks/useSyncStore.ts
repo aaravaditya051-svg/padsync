@@ -66,7 +66,11 @@ export function useSyncStore(roomId: string | null) {
           Object.keys(filteredRemoved).length > 0;
 
         if (hasChanges) {
-          console.log('Sending filtered patch to desktop:', { added: filteredAdded, updated: filteredUpdated, removed: filteredRemoved });
+          if (!roomId) {
+            console.warn('Pending changes but no roomId, ignoring emission');
+            return;
+          }
+          console.log('Sending filtered patch to desktop:', { added: Object.keys(filteredAdded), updated: Object.keys(filteredUpdated), removed: Object.keys(filteredRemoved) });
           socket.emit(SOCKET_EVENTS.TLDRAW_PATCH, { 
             roomId, 
             patch: { added: filteredAdded, updated: filteredUpdated, removed: filteredRemoved } 

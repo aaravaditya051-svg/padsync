@@ -108,8 +108,8 @@ export default function App() {
               Room: {roomId}
             </div>
           ) : (
-            <button 
-              className="status-pill" 
+            <button
+              className="status-pill"
               onClick={() => socket.emit(SOCKET_EVENTS.CREATE_ROOM)}
               style={{ background: '#444', color: 'white', border: 'none', cursor: 'pointer' }}
             >
@@ -133,8 +133,8 @@ export default function App() {
           <div>
             <div className="sidebar-label">Canvas</div>
             <div className="sidebar-hint">Draw on your phone — strokes appear here live.</div>
-            <button 
-              className="export-btn" 
+            <button
+              className="export-btn"
               style={{ marginTop: '12px', width: '100%' }}
               onClick={() => editor?.zoomToFit()}
             >
